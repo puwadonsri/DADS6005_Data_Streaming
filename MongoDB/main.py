@@ -1,276 +1,332 @@
-# coding=utf8
-import tkinter as tk					
-from tkinter import ttk,messagebox
-import os, sys
-from mongodb import insert_doc,find_all_people,delete_doc_by_id,replace_one
+"""
+BMI Calculator with MongoDB Storage
+DADS6005 Data Streaming — Quiz 1 (MongoDB)
+"""
+
+import os
+import tkinter as tk
+from tkinter import ttk, messagebox
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from datetime import date
+from mongodb import MongoDBManager
 
-def graph(_data):
-  
-    print(_data)
-    lists1 = []
-    lists2 = []
+db = MongoDBManager()
 
-    for x in _data:
-        tmp = list(x.values())
-        print(tmp)
-        lists1.append(tmp[5])
-        lists2.append(tmp[2])
-    
-    print(lists1,lists2)
-   
-    data3 = { 'Month': lists1,
-               'Weight': lists2
-         }
-    df3 = pd.DataFrame(data3)
 
-    figure3 = plt.Figure(figsize=(5, 4), dpi=100)
-    ax3 = figure3.add_subplot(111)
-    ax3.scatter(df3['Month'], df3['Weight'], color='g')
-    scatter3 = FigureCanvasTkAgg(figure3, root)
-    scatter3.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH)
-    ax3.legend(['Month'])
-    ax3.set_xlabel('Month')
-    ax3.set_title('Month Vs. Weight')
-    root.mainloop()
+# ─── BMI Logic ──────────────────────────────────────────────
 
-def delete(_id):
-    selected_item = _id.selection()[0]
-    print(_id.item(selected_item)['values'][4])
-    delete_doc_by_id(_id.item(selected_item)['values'][4])
-    messagebox.showinfo("Success","Bmi record deleted")
-    root.config()
+def calculate_bmi(weight_kg: float, height_cm: float) -> float:
+    height_m = height_cm / 100.0
+    return round(weight_kg / (height_m ** 2), 2)
 
-def update(_id):
-    selected_item = _id.selection()[0]  
-    updatepage(_id.item(selected_item)['values'][0],_id.item(selected_item)['values'][1],_id.item(selected_item)['values'][2],_id.item(selected_item)['values'][3],_id.item(selected_item)['values'][4])
 
-  
-def clearToTextInput():
-    tk.Entry.delete("1.0","end")
-
-def fTabSwitched(event):
-        global tabControl
-        l_tabText = tabControl.tab(tabControl.select(), "text")
-        if (l_tabText == 'View Data'):
-            label = tk.Label(tab2, text="BMI Data", font=("Kanit",20)).grid(row=0, columnspan=2)
-            # create Treeview with 3 columns
-            cols = ('Computer Name','Weight','Height','BMI')
-            listBox = ttk.Treeview(tab2, columns=cols, show='headings')
-            # set column headings
-            for col in cols:
-                listBox.heading(col, text=col)    
-            listBox.grid(row=1, column=0, columnspan=2)
-
-            tempList = find_all_people()
-            for x in tempList:
-                tmp = list(x.values())
-                listBox.insert("", "end", values=(tmp[1],tmp[2],tmp[3],tmp[4],tmp[0]))
-                  
-            b2 = tk.Button(tab2, text='Update',command=lambda: update(listBox)).grid(row=4, column=0,sticky="news", padx=5, pady=5)
-            b1 = tk.Button(tab2, text='Delete',command=lambda: delete(listBox)).grid(row=4, column=1,sticky="news", padx=5, pady=5)
-            b3 = tk.Button(tab2, text="Show Graph", command=lambda: graph(tempList)).grid(row=5, columnspan=2,sticky="news", padx=5, pady=5)
-            closeButton = tk.Button(tab2, text="Exit", command=exit).grid(row=6, columnspan=2,sticky="news", padx=5, pady=5)
-        
-        
-def find_bmi():
-    weight = weight_entry.get()
-    height = height_entry.get()
-    h = height_entry.get()
-    # check height and weight filled in
-    if height and weight and h:
-        height = float(height) / 100.0
-        bmi = round(float(weight) / height ** 2, 2)
-        print(f"h : {height}\nw : {weight}\nbmi : {bmi}\ncomputer name : {os.environ['COMPUTERNAME']}")
-        if bmi > 30:
-            color_zone = "red"
-            texts1 = "อยู่ในเกณท์ : อ้วนมาก / โรคอ้วนระดับ 3"
-            texts2 = "ภาวะเสี่ยงต่อโรค : มากกว่าคนปกติ"
-            description = "อ้วนมาก / โรคอ้วนระดับ 3\nคุณ อ้วนมากแล้ว (อ้วนระดับ 3) โดยทั่วไปค่าดัชนีมวลกายปกติมีค่ามากกว่า 30\n\nข้อแนะนำ\n1. ควรควบคุมอาหารโดยลดปริมาณอาหารหรือปรับเปลี่ยนอาหารจากที่ให้พลังงานมากเป็นอาหารที่ให้พลังงานน้อย\n2. ควรเคลื่อนไหวและออกกำลังกายแบบแอโรบิกอย่างสม่ำเสมอทุกวัน 40-60 นาทีต่อวัน\n3. ควรฝึกความแข็งแรงของกล้ามเนื้อ ด้วยการฝึกกายบริหารหรือยกน้ำหนัก\n4. ถ้าคุณสามารถลดพลังงานเข้าจากอาหารลงได้วันละ 400 กิโลแคลอรี\n5. ควรปรึกษาแพทย์หรือผู้เชี่ยวชาญในการลดและควบคุมน้ำหนัก\n\n"
-        elif bmi >= 25 and bmi <= 29.90:
-            color_zone = "orange"
-            texts1 = "อยู่ในเกณท์ : อ้วน / โรคอ้วนระดับ 2"
-            texts2 = "ภาวะเสี่ยงต่อโรค : อันตรายระดับ 2"
-            description = "อ้วน / โรคอ้วนระดับ 2\nคุณ อ้วนแล้ว (อ้วนระดับ 2) โดยทั่วไปค่าดัชนีมวลกายปกติมีค่าระหว่าง 25 - 29.90\n\nข้อแนะนำ\n1. ควรควบคุมอาหารโดยลดปริมาณอาหารหรือปรับเปลี่ยนอาหารจากที่ให้พลังงานมากเป็นอาหารที่ให้พลังงานน้อย\n2. ควรเคลื่อนไหวและออกกำลังกายประมาณ 40-60 นาทีต่อวัน\n3. ควรฝึกความแข็งแรงของกล้ามเนื้อ\n4. ถ้าคุณสามารถลดพลังงานเข้าจากอาหารลงได้วันละ 400 กิโลแคลอรี และเพิ่มการใช้พลังงาน\n\n"
-        elif bmi >= 23 and bmi <= 24.90:
-            color_zone = "yellow"
-            texts1 = "อยู่ในเกณท์ : ท้วม / โรคอ้วนระดับ 1"
-            texts2 = "ภาวะเสี่ยงต่อโรค : อันตรายระดับ 1"
-            description = "ท้วม / อ้วนระดับ 1\nคุณมี น้ำหนักเกิน หรือรูปร่างท้วม โดยทั่วไปค่าดัชนีมวลกายปกติมีค่าระหว่าง 23 - 24.90\n\nข้อแนะนำ\n1. ควรควบคุมอาหาร โดยลดปริมาณอาหารพลังงานที่ได้รับไม่ควรต่ำกว่า 1200 กิโลแคลอรีต่อวัน\n2. ควรเคลื่อนไหวและออกกำลังกายแบบแอโรบิกอย่างสม่ำเสมอทุกวัน\n\n"
-        elif bmi >= 18.5 and bmi <= 22.90:
-            color_zone = "green"
-            texts1 = "อยู่ในเกณท์ : ปกติ (สุขภาพดี)"
-            texts2 = "ภาวะเสี่ยงต่อโรค : เท่าคนปกติ"
-            description = "น้ำหนักปกติ\nคุณมี น้ำหนักปกติ โดยทั่วไปค่าดัชนีมวลกายปกติมีค่าระหว่าง 18.50 - 22.90\n\nข้อแนะนำ\n1. ควรกินอาหารให้หลากหลายครบ 5 หมู่ในสัดส่วนที่เหมาะสม\n2. ควรเคลื่อนไหวและออกกำลังกายอย่างสม่ำเสมอทุกวันอย่างน้อย 30 นาที\n\n"
-        else:
-            color_zone = "red"
-            texts1 = "อยู่ในเกณท์ : น้ำหนักต่ำกว่าเกณฑ์"
-            texts2 = "ภาวะเสี่ยงต่อโรค : มากกว่าคนปกติ"
-            description = "น้ำหนักน้อยกว่ามาตรฐาน\nคุณมีน้ำหนักน้อยหรือผอม โดยทั่วไป ค่าดัชนีมวลกายปกติมีค่าน้อยกว่า 18.50\n\n1. ควรกินอาหารให้หลากหลายครบ 5 หมู่ในสัดส่วนที่เหมาะสม เพิ่มอาหารประเภทที่ให้พลังงานมากขึ้น เช่น ไขมัน แป้ง ข้าว เนื้อสัตว์ นม\n2. ควรเคลื่อนไหวและออกกำลังกายอย่างสม่ำเสมอทุกวันหรือเกือบทุกวัน ให้เหนื่อยพอควรโดยหายใจกระชั้นขึ้น เช่น เดินเร็ว\n\n"
-
-        show_data.config(text = f"\nBMI : {bmi}\n{texts1}\n{texts2}\n" ,background=color_zone)
-        show_desc.config(text = description)
-        insert_doc(os.environ['COMPUTERNAME'],weight,h,bmi)
-
+def bmi_category(bmi: float) -> dict:
+    if bmi > 30:
+        return {
+            "zone": "red",
+            "title": "อ้วนมาก / โรคอ้วนระดับ 3",
+            "risk": "มากกว่าคนปกติ",
+            "advice": (
+                "อ้วนมาก / โรคอ้วนระดับ 3\n"
+                "คุณอ้วนมากแล้ว (อ้วนระดับ 3)\n\n"
+                "ข้อแนะนำ\n"
+                "1. ควรควบคุมอาหารโดยลดปริมาณอาหารหรือปรับเปลี่ยนอาหาร\n"
+                "2. ควรเคลื่อนไหวและออกกำลังกายแบบแอโรบิก 40-60 นาทีต่อวัน\n"
+                "3. ควรฝึกความแข็งแรงของกล้ามเนื้อ\n"
+                "4. ลดพลังงานจากอาหารลงได้วันละ 400 กิโลแคลอรี\n"
+                "5. ควรปรึกษาแพทย์หรือผู้เชี่ยวชาญในการลดน้ำหนัก\n"
+            ),
+        }
+    elif bmi >= 25:
+        return {
+            "zone": "orange",
+            "title": "อ้วน / โรคอ้วนระดับ 2",
+            "risk": "อันตรายระดับ 2",
+            "advice": (
+                "อ้วน / โรคอ้วนระดับ 2\n"
+                f"ค่าดัชนีมวลกายของคุณอยู่ระหว่าง 25 - 29.90\n\n"
+                "ข้อแนะนำ\n"
+                "1. ควบคุมอาหาร ลดปริมาณหรือปรับเปลี่ยนอาหาร\n"
+                "2. ออกกำลังกาย 40-60 นาทีต่อวัน\n"
+                "3. ฝึกความแข็งแรงของกล้ามเนื้อ\n"
+                "4. ลดพลังงานเข้าจากอาหารวันละ 400 กิโลแคลอรี\n"
+            ),
+        }
+    elif bmi >= 23:
+        return {
+            "zone": "yellow",
+            "title": "ท้วม / โรคอ้วนระดับ 1",
+            "risk": "อันตรายระดับ 1",
+            "advice": (
+                "ท้วม / อ้วนระดับ 1\n"
+                f"ค่าดัชนีมวลกายของคุณอยู่ระหว่าง 23 - 24.90\n\n"
+                "ข้อแนะนำ\n"
+                "1. ควบคุมอาหาร พลังงานไม่ควรต่ำกว่า 1200 กิโลแคลอรี/วัน\n"
+                "2. ออกกำลังกายแบบแอโรบิกอย่างสม่ำเสมอ\n"
+            ),
+        }
+    elif bmi >= 18.5:
+        return {
+            "zone": "green",
+            "title": "ปกติ (สุขภาพดี)",
+            "risk": "เท่าคนปกติ",
+            "advice": (
+                "น้ำหนักปกติ\n"
+                f"ค่าดัชนีมวลกายของคุณอยู่ระหว่าง 18.50 - 22.90\n\n"
+                "ข้อแนะนำ\n"
+                "1. กินอาหารให้หลากหลายครบ 5 หมู่ในสัดส่วนที่เหมาะสม\n"
+                "2. ออกกำลังกายอย่างสม่ำเสมออย่างน้อย 30 นาที/วัน\n"
+            ),
+        }
     else:
-        tk.messagebox.showwarning(title="Error", message="Weight and Height are required.")
-        show_data.config(text='')
-        show_desc.config(text='')
-
-def update_bmi(_id):
-    weight2 = weight_entry2.get()
-    height2 = height_entry2.get()
-    h2 = height_entry2.get()
-    # check height and weight filled in
-    if height2 and weight2 and h2:
-        height2 = float(height2) / 100.0
-        bmi2 = round(float(weight2) / height2 ** 2, 2)
-        print(f"h : {height2}\nw : {weight2}\nbmi : {bmi2}\ncomputer name : {os.environ['COMPUTERNAME']}")
-        if bmi2 > 30:
-            color_zone2 = "red"
-            texts12 = "อยู่ในเกณท์ : อ้วนมาก / โรคอ้วนระดับ 3"
-            texts22 = "ภาวะเสี่ยงต่อโรค : มากกว่าคนปกติ"
-            description2 = "อ้วนมาก / โรคอ้วนระดับ 3\nคุณ อ้วนมากแล้ว (อ้วนระดับ 3) โดยทั่วไปค่าดัชนีมวลกายปกติมีค่ามากกว่า 30\n\nข้อแนะนำ\n1. ควรควบคุมอาหารโดยลดปริมาณอาหารหรือปรับเปลี่ยนอาหารจากที่ให้พลังงานมากเป็นอาหารที่ให้พลังงานน้อย\n2. ควรเคลื่อนไหวและออกกำลังกายแบบแอโรบิกอย่างสม่ำเสมอทุกวัน 40-60 นาทีต่อวัน\n3. ควรฝึกความแข็งแรงของกล้ามเนื้อ ด้วยการฝึกกายบริหารหรือยกน้ำหนัก\n4. ถ้าคุณสามารถลดพลังงานเข้าจากอาหารลงได้วันละ 400 กิโลแคลอรี\n5. ควรปรึกษาแพทย์หรือผู้เชี่ยวชาญในการลดและควบคุมน้ำหนัก\n\n"
-        elif bmi2 >= 25 and bmi2 <= 29.90:
-            color_zone2 = "orange"
-            texts12 = "อยู่ในเกณท์ : อ้วน / โรคอ้วนระดับ 2"
-            texts22 = "ภาวะเสี่ยงต่อโรค : อันตรายระดับ 2"
-            description2 = "อ้วน / โรคอ้วนระดับ 2\nคุณ อ้วนแล้ว (อ้วนระดับ 2) โดยทั่วไปค่าดัชนีมวลกายปกติมีค่าระหว่าง 25 - 29.90\n\nข้อแนะนำ\n1. ควรควบคุมอาหารโดยลดปริมาณอาหารหรือปรับเปลี่ยนอาหารจากที่ให้พลังงานมากเป็นอาหารที่ให้พลังงานน้อย\n2. ควรเคลื่อนไหวและออกกำลังกายประมาณ 40-60 นาทีต่อวัน\n3. ควรฝึกความแข็งแรงของกล้ามเนื้อ\n4. ถ้าคุณสามารถลดพลังงานเข้าจากอาหารลงได้วันละ 400 กิโลแคลอรี และเพิ่มการใช้พลังงาน\n\n"
-        elif bmi2 >= 23 and bmi2 <= 24.90:
-            color_zone2 = "yellow"
-            texts12 = "อยู่ในเกณท์ : ท้วม / โรคอ้วนระดับ 1"
-            texts22 = "ภาวะเสี่ยงต่อโรค : อันตรายระดับ 1"
-            description2 = "ท้วม / อ้วนระดับ 1\nคุณมี น้ำหนักเกิน หรือรูปร่างท้วม โดยทั่วไปค่าดัชนีมวลกายปกติมีค่าระหว่าง 23 - 24.90\n\nข้อแนะนำ\n1. ควรควบคุมอาหาร โดยลดปริมาณอาหารพลังงานที่ได้รับไม่ควรต่ำกว่า 1200 กิโลแคลอรีต่อวัน\n2. ควรเคลื่อนไหวและออกกำลังกายแบบแอโรบิกอย่างสม่ำเสมอทุกวัน\n\n"
-        elif bmi2 >= 18.5 and bmi2 <= 22.90:
-            color_zone2 = "green"
-            texts12 = "อยู่ในเกณท์ : ปกติ (สุขภาพดี)"
-            texts22 = "ภาวะเสี่ยงต่อโรค : เท่าคนปกติ"
-            description2 = "น้ำหนักปกติ\nคุณมี น้ำหนักปกติ โดยทั่วไปค่าดัชนีมวลกายปกติมีค่าระหว่าง 18.50 - 22.90\n\nข้อแนะนำ\n1. ควรกินอาหารให้หลากหลายครบ 5 หมู่ในสัดส่วนที่เหมาะสม\n2. ควรเคลื่อนไหวและออกกำลังกายอย่างสม่ำเสมอทุกวันอย่างน้อย 30 นาที\n\n"
-        else:
-            color_zone2 = "red"
-            texts12 = "อยู่ในเกณท์ : น้ำหนักต่ำกว่าเกณฑ์"
-            texts22 = "ภาวะเสี่ยงต่อโรค : มากกว่าคนปกติ"
-            description2 = "น้ำหนักน้อยกว่ามาตรฐาน\nคุณมีน้ำหนักน้อยหรือผอม โดยทั่วไป ค่าดัชนีมวลกายปกติมีค่าน้อยกว่า 18.50\n\n1. ควรกินอาหารให้หลากหลายครบ 5 หมู่ในสัดส่วนที่เหมาะสม เพิ่มอาหารประเภทที่ให้พลังงานมากขึ้น เช่น ไขมัน แป้ง ข้าว เนื้อสัตว์ นม\n2. ควรเคลื่อนไหวและออกกำลังกายอย่างสม่ำเสมอทุกวันหรือเกือบทุกวัน ให้เหนื่อยพอควรโดยหายใจกระชั้นขึ้น เช่น เดินเร็ว\n\n"
-
-        show_data2.config(text = f"\nBMI : {bmi2}\n{texts12}\n{texts22}\n" ,background=color_zone2)
-        show_desc2.config(text = description2)
-        replace_one(_id,os.environ['COMPUTERNAME'],weight2,h2,bmi2)
-       
-    else:
-        pages.destroy
-        tk.messagebox.showwarning(title="Error", message="Weight and Height are required.")
-        show_data2.config(text='')
-        show_desc2.config(text='')
-
-def updatepage(a,b,c,d,e):
-    print(a,b,c,d,e)
-    global pages
-    global weight_entry2
-    global height_entry2
-    global show_data2
-    global show_desc2
-    pages = tk.Tk()
-    pages.title("Health & Diet Calculators :")
-
-    info_frame = ttk.LabelFrame(pages, text="อัพเดตค่าดัชนีมวลกาย")
-    info_frame.grid(row= 0, column=0, padx=35, pady=30)
-
-    weight_label = ttk.Label(info_frame, text=f"น้ำหนักตัว (kg.) : =>  เดิม {b} kg.")
-    weight_label.grid(row=1, column=0)
-
-    height_label = ttk.Label(info_frame, text=f"ส่วนสูง (cm.) : =>  เดิม {c} cm.")
-    height_label.grid(row=2, column=0)
-
-    weight_entry2 = ttk.Entry(info_frame)
-    weight_entry2.grid(row=1, column=1)
-
-    height_entry2 = ttk.Entry(info_frame)
-    height_entry2.grid(row=2, column=1)
-
-    for widget in info_frame.winfo_children():
-        widget.grid_configure(padx=100, pady=15)
-
-    # Button
-    button = ttk.Button(info_frame, text="Update", command=lambda:update_bmi(e))
-    button.grid(row=3, column=0, sticky="news", padx=5, pady=5)
-
-    button = ttk.Button(info_frame, text="Exit",command=pages.destroy)
-    button.grid(row=3, column=1, sticky="news", padx=5, pady=5)
-
-    show_data2 = ttk.Label(pages, text="",background="")
-    show_data2.grid(rowspan=3,columnspan=2)
-    show_desc2 = ttk.Label(pages, text="")
-    show_desc2.grid(rowspan=8,columnspan=2)
-
-    pages.mainloop()
+        return {
+            "zone": "red",
+            "title": "น้ำหนักต่ำกว่าเกณฑ์",
+            "risk": "มากกว่าคนปกติ",
+            "advice": (
+                "น้ำหนักน้อยกว่ามาตรฐาน\n"
+                f"ค่าดัชนีมวลกายของคุณน้อยกว่า 18.50\n\n"
+                "ข้อแนะนำ\n"
+                "1. กินอาหารให้หลากหลายครบ 5 หมู่ เพิ่มพลังงาน เช่น ไขมัน แป้ง เนื้อสัตว์\n"
+                "2. ออกกำลังกายอย่างสม่ำเสมอ เช่น เดินเร็ว\n"
+            ),
+        }
 
 
-def mainpage():
-    global root
-    global tabControl
-    global tab1
-    global tab2
-    global tab3
-    global height_entry
-    global weight_entry
-    global show_data
-    global show_desc
+# ─── Graph ──────────────────────────────────────────────────
+
+def show_graph(data: list, parent):
+    months = []
+    weights = []
+    for doc in data:
+        months.append(doc.get("_date", "?"))
+        weights.append(float(doc.get("_weight", 0)))
+
+    fig = plt.Figure(figsize=(5, 4), dpi=100)
+    ax = fig.add_subplot(111)
+    ax.scatter(months, weights, color="g", s=60)
+    ax.plot(months, weights, color="gray", linestyle="--", alpha=0.5)
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Weight (kg)")
+    ax.set_title("Weight Over Time")
+    ax.tick_params(axis="x", rotation=45)
+
+    win = tk.Toplevel(parent)
+    win.title("Weight Trend Graph")
+    canvas = FigureCanvasTkAgg(fig, win)
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    canvas.draw()
+
+
+# ─── View Data Tab ──────────────────────────────────────────
+
+def on_tab_switch(event):
+    tab_text = event.widget.tab(event.widget.select(), "text")
+    if tab_text == "View Data":
+        build_view_tab()
+
+
+def build_view_tab():
+    for w in tab2.winfo_children():
+        w.destroy()
+
+    tk.Label(tab2, text="BMI Data", font=("Tahoma", 16)).pack(pady=10)
+
+    cols = ("Computer Name", "Weight", "Height", "BMI", "_id")
+    tree = ttk.Treeview(tab2, columns=cols, show="headings", selectmode="browse")
+    for col in cols:
+        tree.heading(col, text=col)
+        tree.column(col, width=120 if col != "_id" else 200)
+    tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+
+    records = db.find_all()
+    for r in records:
+        tree.insert(
+            "", "end",
+            values=(
+                r.get("_computer_name", ""),
+                r.get("_weight", ""),
+                r.get("_height", ""),
+                r.get("_bmi", ""),
+                str(r.get("_id", "")),
+            ),
+        )
+
+    btn_frame = tk.Frame(tab2)
+    btn_frame.pack(pady=10)
+
+    tk.Button(btn_frame, text="Update", command=lambda: open_update_page(tree)).pack(
+        side=tk.LEFT, padx=5
+    )
+    tk.Button(btn_frame, text="Delete", command=lambda: delete_record(tree)).pack(
+        side=tk.LEFT, padx=5
+    )
+    tk.Button(
+        btn_frame, text="Show Graph", command=lambda: show_graph(records, root)
+    ).pack(side=tk.LEFT, padx=5)
+    tk.Button(btn_frame, text="Exit", command=root.destroy).pack(
+        side=tk.LEFT, padx=5
+    )
+
+
+def get_selected_id(tree):
+    sel = tree.selection()
+    if not sel:
+        messagebox.showwarning("Warning", "กรุณาเลือก record ที่ต้องการ")
+        return None
+    return tree.item(sel[0])["values"][4]
+
+
+def delete_record(tree):
+    doc_id = get_selected_id(tree)
+    if not doc_id:
+        return
+    if messagebox.askyesno("Confirm", "ลบ record นี้?"):
+        db.delete_by_id(doc_id)
+        messagebox.showinfo("Success", "ลบเรียบร้อย")
+        build_view_tab()
+
+
+# ─── Update Page ────────────────────────────────────────────
+
+def open_update_page(tree):
+    doc_id = get_selected_id(tree)
+    if not doc_id:
+        return
+
+    sel = tree.selection()[0]
+    old_weight = tree.item(sel)["values"][1]
+    old_height = tree.item(sel)["values"][2]
+
+    win = tk.Toplevel(root)
+    win.title("Update BMI Record")
+
+    frame = ttk.LabelFrame(win, text="อัพเดตค่าดัชนีมวลกาย")
+    frame.pack(padx=30, pady=30)
+
+    ttk.Label(frame, text=f"น้ำหนักตัว (kg.) :   เดิม {old_weight} kg.").grid(
+        row=0, column=0, padx=10, pady=10
+    )
+    weight_ent = ttk.Entry(frame)
+    weight_ent.grid(row=0, column=1, padx=10, pady=10)
+
+    ttk.Label(frame, text=f"ส่วนสูง (cm.) :   เดิม {old_height} cm.").grid(
+        row=1, column=0, padx=10, pady=10
+    )
+    height_ent = ttk.Entry(frame)
+    height_ent.grid(row=1, column=1, padx=10, pady=10)
+
+    result_label = ttk.Label(win, text="")
+    result_label.pack()
+    advice_label = ttk.Label(win, text="", wraplength=400, justify="left")
+    advice_label.pack(padx=20, pady=10)
+
+    def do_update():
+        try:
+            w = float(weight_ent.get())
+            h = float(height_ent.get())
+        except ValueError:
+            messagebox.showwarning("Error", "กรุณากรอกตัวเลขเท่านั้น")
+            return
+        bmi = calculate_bmi(w, h)
+        cat = bmi_category(bmi)
+        result_label.config(
+            text=f"\nBMI : {bmi}\n{cat['title']}\n{cat['risk']}\n",
+            background=cat["zone"],
+        )
+        advice_label.config(text=cat["advice"])
+        db.replace_one(doc_id, os.environ["COMPUTERNAME"], w, h, bmi)
+        messagebox.showinfo("Success", "อัพเดตเรียบร้อย")
+
+    btn_frame = tk.Frame(win)
+    btn_frame.pack(pady=10)
+    tk.Button(btn_frame, text="Update", command=do_update).pack(
+        side=tk.LEFT, padx=5
+    )
+    tk.Button(btn_frame, text="Close", command=win.destroy).pack(
+        side=tk.LEFT, padx=5
+    )
+
+
+# ─── BMI Tab ────────────────────────────────────────────────
+
+def calculate_and_save():
+    try:
+        w = float(weight_entry.get())
+        h = float(height_entry.get())
+    except ValueError:
+        messagebox.showwarning("Error", "กรุณากรอกน้ำหนักและส่วนสูงเป็นตัวเลข")
+        show_data.config(text="")
+        show_desc.config(text="")
+        return
+
+    bmi = calculate_bmi(w, h)
+    cat = bmi_category(bmi)
+    show_data.config(
+        text=f"\nBMI : {bmi}\n{cat['title']}\n{cat['risk']}\n",
+        background=cat["zone"],
+    )
+    show_desc.config(text=cat["advice"])
+    db.insert_doc(os.environ["COMPUTERNAME"], w, h, bmi)
+
+
+def clear_inputs():
+    weight_entry.delete(0, tk.END)
+    height_entry.delete(0, tk.END)
+    show_data.config(text="", background="")
+    show_desc.config(text="")
+
+
+# ─── Main GUI ───────────────────────────────────────────────
+
+def main():
+    global root, tab2, weight_entry, height_entry, show_data, show_desc
+
     root = tk.Tk()
-    root.title("Health & Diet Calculators :")
+    root.title("BMI Calculator with MongoDB")
+    root.geometry("600x550")
 
-    tabControl = ttk.Notebook(root)
+    tab_ctrl = ttk.Notebook(root)
+    tab1 = ttk.Frame(tab_ctrl)
+    tab2 = ttk.Frame(tab_ctrl)
 
-    tab1 = ttk.Frame(tabControl)
-    tab2 = ttk.Frame(tabControl)
-    tab3 = ttk.Frame(tabControl)
-
-    # Create an instance of ttk style
     s = ttk.Style()
-    s.theme_use('default')
-    s.configure('TNotebook.Tab', background="snow3")
-    s.map("TNotebook", background= [("selected", "snow3")])
+    s.theme_use("default")
+    tab_ctrl.add(tab1, text="BMI")
+    tab_ctrl.add(tab2, text="View Data")
+    tab_ctrl.bind("<ButtonRelease-1>", on_tab_switch)
+    tab_ctrl.pack(expand=True, fill="both")
 
-    tabControl.add(tab1, text ='BMI')
-    tabControl.add(tab2, text ='View Data')
-    tabControl.bind("<ButtonRelease-1>",fTabSwitched)
-    tabControl.pack(expand = 1, fill ="both")
+    # ── Tab 1: BMI Calculator ──
+    frame = ttk.LabelFrame(tab1, text="คำนวณค่าดัชนีมวลกาย (BMI)")
+    frame.pack(pady=30, padx=35)
 
-    info_frame = ttk.LabelFrame(tab1, text="คำนวณหาค่าดัชนีมวลกาย")
-    info_frame.grid(row= 0, column=0, padx=35, pady=30)
+    ttk.Label(frame, text="น้ำหนักตัว (kg.) :").grid(row=0, column=0, padx=10, pady=10)
+    weight_entry = ttk.Entry(frame)
+    weight_entry.grid(row=0, column=1, padx=10, pady=10)
 
-    weight_label = ttk.Label(info_frame, text="น้ำหนักตัว (kg.) : ")
-    weight_label.grid(row=1, column=0)
+    ttk.Label(frame, text="ส่วนสูง (cm.) :").grid(row=1, column=0, padx=10, pady=10)
+    height_entry = ttk.Entry(frame)
+    height_entry.grid(row=1, column=1, padx=10, pady=10)
 
-    height_label = ttk.Label(info_frame, text="ส่วนสูง (cm.) : ")
-    height_label.grid(row=2, column=0)
+    btn_frame = tk.Frame(frame)
+    btn_frame.grid(row=2, column=0, columnspan=2, pady=10)
+    ttk.Button(btn_frame, text="Calculate & Save", command=calculate_and_save).pack(
+        side=tk.LEFT, padx=5
+    )
+    ttk.Button(btn_frame, text="Clear", command=clear_inputs).pack(
+        side=tk.LEFT, padx=5
+    )
 
-    weight_entry = ttk.Entry(info_frame)
-    weight_entry.grid(row=1, column=1)
-
-    height_entry = ttk.Entry(info_frame)
-    height_entry.grid(row=2, column=1)
-
-    for widget in info_frame.winfo_children():
-        widget.grid_configure(padx=100, pady=15)
-
-    # Button
-    button = ttk.Button(info_frame, text="Calculators & Save", command=find_bmi)
-    button.grid(row=3, column=0, sticky="news", padx=5, pady=5)
-
-    button = ttk.Button(info_frame, text="Clear", command=clearToTextInput)
-    button.grid(row=3, column=1, sticky="news", padx=5, pady=5)
-
-    button = ttk.Button(info_frame, text="Exit", command=root.destroy)
-    button.grid(row=4, columnspan=2, sticky="news", padx=5, pady=5)
-
-    show_data = ttk.Label(tab1, text="",background="")
-    show_data.grid(rowspan=3,columnspan=2)
-    show_desc = ttk.Label(tab1, text="")
-    show_desc.grid(rowspan=8,columnspan=2)
+    show_data = ttk.Label(tab1, text="", font=("Tahoma", 11))
+    show_data.pack(pady=5)
+    show_desc = ttk.Label(tab1, text="", wraplength=500, justify="left")
+    show_desc.pack(padx=20, pady=5)
 
     root.mainloop()
+    db.close()
 
-mainpage()
+
+if __name__ == "__main__":
+    main()

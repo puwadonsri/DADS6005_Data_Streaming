@@ -1,65 +1,64 @@
+"""
+MongoDB CRUD Operations for BMI Data
+DADS6005 Data Streaming — Quiz 1 (MongoDB)
+"""
+
 import os
-import pprint
-from pymongo import MongoClient
 from datetime import datetime
-
-#เชื่อมต่อ mongoDB
-connection_string = "mongodb://localhost:27017"
-client = MongoClient(connection_string)
-
-#print เพื่อดู db ที่มีทั้งหมด 
-dbs = client.list_database_names() 
-print(dbs) 
-
-#กำหนดตัวแปร db ไปหา collection ใน db นั้น เทียบ sql คือ database -> table
-db = client.person_collection
-
-#print เพื่อดู collection ที่มีทั้งหมด 
-collection = db.list_collection_names() 
-print(collection)
-
-collection = db.bmi
-
-#I Insert / Create
-def insert_doc(comname,weight,height,bmi):
-    collection = db.bmi
-    insert_data = {
-        "_computer_name"    : comname,
-        "_weight"   : weight,
-        "_height"   : height,
-        "_bmi"      : bmi,
-        "_date"     : datetime.today().strftime('%Y-%m-%d')
-    }
-    collection.insert_one(insert_data)
-    ins_id = collection.insert_one(insert_data).inserted_id
-    print(ins_id)
-
-printer = pprint.PrettyPrinter()
-#R Read ค้นหาข้อมูลใน collection
-def find_all_people():
-    #SELECT * FROM person
-    people = collection.find()
-    return list(people)
-
-#U Update การอัพเดตข้อมูลใน collection
-def replace_one(ids,comname,weight,height,bmi): 
-    from bson.objectid import ObjectId
-    _id = ObjectId(ids)
-    new_doc = {
-        "_computer_name": comname,
-        "_weight" : weight,
-        "_height" : height,
-        "_bmi"  : bmi,
-        "_date" : datetime.today().strftime('%Y-%m-%d')
-    }
-
-    collection.replace_one({"_id":_id},new_doc)
-
-#D ลบ
-def delete_doc_by_id(person_id):
-    from bson.objectid import ObjectId
-    _id = ObjectId(person_id)
-    collection.delete_one({"_id" : _id}) #ลบ 1 row
-    return _id
+from pymongo import MongoClient, errors
+from bson.objectid import ObjectId
 
 
+class MongoDBManager:
+    def __init__(self, connection_string: str = "mongodb://localhost:27017"):
+        self.client = MongoClient(connection_string)
+        self.db = self.client.person_collection
+        self.collection = self.db.bmi
+
+    def ping(self) -> bool:
+        try:
+            self.client.admin.command('ping')
+            return True
+        except errors.ConnectionFailure:
+            return False
+
+    def list_databases(self) -> list:
+        return self.client.list_database_names()
+
+    def list_collections(self) -> list:
+        return self.db.list_collection_names()
+
+    def insert_doc(self, comname: str, weight: float, height: float, bmi: float) -> str:
+        doc = {
+            "_computer_name": comname,
+            "_weight": float(weight),
+            "_height": float(height),
+            "_bmi": round(float(bmi), 2),
+            "_date": datetime.today().strftime('%Y-%m-%d')
+        }
+        result = self.collection.insert_one(doc)
+        return str(result.inserted_id)
+
+    def find_all(self) -> list:
+        return list(self.collection.find())
+
+    def find_by_id(self, doc_id: str) -> dict:
+        return self.collection.find_one({"_id": ObjectId(doc_id)})
+
+    def replace_one(self, doc_id: str, comname: str, weight: float, height: float, bmi: float) -> bool:
+        new_doc = {
+            "_computer_name": comname,
+            "_weight": float(weight),
+            "_height": float(height),
+            "_bmi": round(float(bmi), 2),
+            "_date": datetime.today().strftime('%Y-%m-%d')
+        }
+        result = self.collection.replace_one({"_id": ObjectId(doc_id)}, new_doc)
+        return result.modified_count > 0
+
+    def delete_by_id(self, doc_id: str) -> bool:
+        result = self.collection.delete_one({"_id": ObjectId(doc_id)})
+        return result.deleted_count > 0
+
+    def close(self):
+        self.client.close()
