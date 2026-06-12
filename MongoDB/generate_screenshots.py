@@ -71,11 +71,11 @@ img1 = Image.new("RGB", (W1, H1), C["bg"])
 d1 = ImageDraw.Draw(img1)
 
 draw_window_bg(d1, W1, H1)
-draw_tab(d1, ["💪 BMI", "📋 ดูข้อมูล"], active=0)
+draw_tab(d1, ["BMI", "ดูข้อมูล"], active=0)
 
 # Header text
-d1.text((20, 74), "🧮 เครื่องคำนวณดัชนีมวลกาย (BMI)", fill=C["text"], font=getfont(14, bold=True))
-d1.text((20, 94), "คำนวณ BMI และรับคำแนะนำสุขภาพ พร้อมบันทึกข้อมูลลง MongoDB",
+d1.text((20, 74), "เครื่องคำนวณดัชนีมวลกาย (BMI)", fill=C["text"], font=getfont(14, bold=True))
+d1.text((20, 93), "คำนวณ BMI พร้อมคำแนะนำสุขภาพ และบันทึกข้อมูลลง MongoDB",
         fill=C["muted"], font=getfont(9))
 
 # Input card
@@ -94,12 +94,12 @@ d1.text((365, 172), "175", fill="#b2bec3", font=getfont(11))
 
 # Buttons
 round_rect(d1, [45, 204, 175, 230], fill=C["primary"])
-d1.text((58, 209), "💾 คำนวณ & บันทึก", fill="white", font=getfont(10))
+d1.text((58, 209), "คำนวณ & บันทึก", fill="white", font=getfont(10))
 round_rect(d1, [185, 204, 263, 230], fill=C["card"], outline=C["border"])
-d1.text((201, 209), "🗑️ ล้าง", fill=C["text"], font=getfont(10))
+d1.text((201, 209), "ล้าง", fill=C["text"], font=getfont(10))
 
 # Progress bar label
-d1.text((20, 246), "BMI Index", fill=C["muted"], font=getfont(9))
+d1.text((20, 246), "ดัชนีมวลกาย (BMI)", fill=C["muted"], font=getfont(9))
 
 # Progress bar
 d1.rectangle([20, 258, 580, 274], fill="#e0e0e0", outline=None)
@@ -135,10 +135,10 @@ img2 = Image.new("RGB", (W2, H2), C["bg"])
 d2 = ImageDraw.Draw(img2)
 
 draw_window_bg(d2, W2, H2)
-draw_tab(d2, ["💪 BMI", "📋 ดูข้อมูล"], active=1, x_start=120)
+draw_tab(d2, ["BMI", "ดูข้อมูล"], active=1, x_start=120)
 
 # Header
-d2.text((15, 74), "📋 ประวัติ BMI ทั้งหมด", fill=C["text"], font=getfont(14, bold=True))
+d2.text((15, 74), "ประวัติ BMI ทั้งหมด", fill=C["text"], font=getfont(14, bold=True))
 
 # Table header
 col_x = [20, 55, 210, 280, 350, 420]
@@ -174,7 +174,7 @@ for i, row in enumerate(rows):
 
 # Buttons
 bx_pos = [20, 105, 190, 275]
-btn_labels = ["✏️ แก้ไข", "🗑️ ลบ", "📈 กราฟ", "❌ ออก"]
+btn_labels = ["แก้ไข", "ลบ", "กราฟ", "ออก"]
 for i in range(4):
     round_rect(d2, [bx_pos[i], y + 10, bx_pos[i] + 75, y + 34], fill=C["primary"])
     d2.text((bx_pos[i] + 6, y + 15), btn_labels[i], fill="white", font=getfont(10))
@@ -191,9 +191,9 @@ img3 = Image.new("RGB", (W3, H3), "#f8f9fa")
 d3 = ImageDraw.Draw(img3)
 
 d3.rectangle([0, 0, W3, 34], fill=C["primary"])
-d3.text((14, 8), "Weight Trend Graph", fill="white", font=getfont(11))
+d3.text((14, 8), "Weight Trend Graph - แนวโน้มน้ำหนัก", fill="white", font=getfont(11))
 
-d3.text((20, 44), "แนวโน้มน้ำหนัก", fill=C["text"], font=getfont(14, bold=True))
+d3.text((20, 44), "แนวโน้มน้ำหนัก (Weight Trend)", fill=C["text"], font=getfont(14, bold=True))
 
 # Graph area
 gx, gy, gw, gh = 70, 80, 460, 320
@@ -202,12 +202,14 @@ d3.rectangle([gx, gy, gx + gw, gy + gh], fill="white", outline=C["border"])
 # Axes
 d3.line([gx + 40, gy + gh - 30, gx + gw - 10, gy + gh - 30], fill=C["text"], width=2)  # x
 d3.line([gx + 40, gy + 20, gx + 40, gy + gh - 30], fill=C["text"], width=2)  # y
+d3.text((gx + 4, gy + 8), "น้ำหนัก (kg.)", fill=C["text"], font=getfont(8))
 
 # X labels
 dates = ["May 01", "May 15", "Jun 01", "Jun 15", "Jul 01"]
 for i, dd in enumerate(dates):
     x = gx + 60 + i * 80
     d3.text((x - 16, gy + gh - 24), dd, fill=C["muted"], font=getfont(7))
+d3.text((gx + gw - 50, gy + gh - 12), "วันที่", fill=C["text"], font=getfont(8))
 
 # Y labels
 for i, yy in enumerate(range(50, 95, 5)):

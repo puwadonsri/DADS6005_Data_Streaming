@@ -196,7 +196,7 @@ def build_view_tab():
 
     header = tk.Frame(tab2, bg=COLOR_CARD)
     header.pack(fill=tk.X, padx=15, pady=(15, 5))
-    tk.Label(header, text="📋 ประวัติ BMI ทั้งหมด", font=FONT_TITLE,
+    tk.Label(header, text="ประวัติ BMI ทั้งหมด", font=FONT_TITLE,
              bg=COLOR_CARD, fg=COLOR_TEXT).pack(anchor="w")
 
     cols = ("#", "Computer", "น้ำหนัก", "ส่วนสูง", "BMI", "วันที่", "_id")
@@ -244,10 +244,10 @@ def build_view_tab():
     style = ttk.Style()
     btn_cfg = {"style": "Modern.TButton", "padding": (14, 6)}
 
-    ttk.Button(btn_frame, text="✏️ แก้ไข", command=lambda: open_update_page(tree), **btn_cfg).pack(side=tk.LEFT, padx=4)
-    ttk.Button(btn_frame, text="🗑️ ลบ", command=lambda: delete_record(tree), **btn_cfg).pack(side=tk.LEFT, padx=4)
-    ttk.Button(btn_frame, text="📈 กราฟ", command=lambda: show_graph(records, root), **btn_cfg).pack(side=tk.LEFT, padx=4)
-    ttk.Button(btn_frame, text="❌ ออก", command=root.destroy, **btn_cfg).pack(side=tk.LEFT, padx=4)
+    ttk.Button(btn_frame, text="แก้ไข", command=lambda: open_update_page(tree), **btn_cfg).pack(side=tk.LEFT, padx=4)
+    ttk.Button(btn_frame, text="ลบ", command=lambda: delete_record(tree), **btn_cfg).pack(side=tk.LEFT, padx=4)
+    ttk.Button(btn_frame, text="กราฟ", command=lambda: show_graph(records, root), **btn_cfg).pack(side=tk.LEFT, padx=4)
+    ttk.Button(btn_frame, text="ออก", command=root.destroy, **btn_cfg).pack(side=tk.LEFT, padx=4)
 
 
 def get_selected_id(tree):
@@ -288,7 +288,7 @@ def open_update_page(tree):
     card = tk.Frame(win, bg=COLOR_CARD, highlightbackground=BORDER, highlightthickness=1)
     card.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
 
-    tk.Label(card, text="✏️ อัพเดตค่าดัชนีมวลกาย", font=FONT_TITLE,
+    tk.Label(card, text="อัพเดตค่าดัชนีมวลกาย", font=FONT_TITLE,
              bg=COLOR_CARD, fg=COLOR_TEXT).pack(pady=(15, 15))
 
     fields = tk.Frame(card, bg=COLOR_CARD)
@@ -332,7 +332,7 @@ def open_update_page(tree):
 
     btn_upd = tk.Frame(win, bg=COLOR_BG)
     btn_upd.pack(pady=(0, 15))
-    ttk.Button(btn_upd, text="💾 บันทึก", command=do_update, padding=(14, 6)).pack(side=tk.LEFT, padx=5)
+    ttk.Button(btn_upd, text="บันทึก", command=do_update, padding=(14, 6)).pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_upd, text="ยกเลิก", command=win.destroy, padding=(14, 6)).pack(side=tk.LEFT, padx=5)
 
 
@@ -424,8 +424,8 @@ def main():
     tab_ctrl = ttk.Notebook(root)
     tab1 = tk.Frame(tab_ctrl, bg=COLOR_CARD)
     tab2 = tk.Frame(tab_ctrl, bg=COLOR_BG)
-    tab_ctrl.add(tab1, text="💪 BMI")
-    tab_ctrl.add(tab2, text="📋 ดูข้อมูล")
+    tab_ctrl.add(tab1, text="BMI")
+    tab_ctrl.add(tab2, text="ดูข้อมูล")
     tab_ctrl.bind("<ButtonRelease-1>", on_tab_switch)
     tab_ctrl.pack(expand=True, fill="both", padx=8, pady=8)
 
@@ -436,7 +436,7 @@ def main():
     # Header
     header = tk.Frame(tab1, bg=COLOR_CARD)
     header.pack(fill=tk.X, padx=20, pady=(20, 5))
-    tk.Label(header, text="🧮 เครื่องคำนวณดัชนีมวลกาย (BMI)", font=FONT_TITLE,
+    tk.Label(header, text="เครื่องคำนวณดัชนีมวลกาย (BMI)", font=FONT_TITLE,
              bg=COLOR_CARD, fg=COLOR_TEXT).pack(anchor="w")
     tk.Label(header, text="คำนวณ BMI และรับคำแนะนำสุขภาพ พร้อมบันทึกข้อมูลลง MongoDB",
              font=("Leelawadee UI", 9), bg=COLOR_CARD, fg=COLOR_TEXT_MUTED).pack(anchor="w")
@@ -472,9 +472,9 @@ def main():
     # Buttons
     btn_row = tk.Frame(input_card, bg=COLOR_CARD)
     btn_row.pack(pady=(5, 12))
-    ttk.Button(btn_row, text="💾 คำนวณ & บันทึก", command=calculate_and_save,
+    ttk.Button(btn_row, text="คำนวณ & บันทึก", command=calculate_and_save,
                padding=(16, 7), style="Modern.TButton").pack(side=tk.LEFT, padx=5)
-    ttk.Button(btn_row, text="🗑️ ล้าง", command=clear_inputs,
+    ttk.Button(btn_row, text="ล้าง", command=clear_inputs,
                padding=(16, 7), style="Modern.TButton").pack(side=tk.LEFT, padx=5)
 
     # Progress bar (BMI gauge)
