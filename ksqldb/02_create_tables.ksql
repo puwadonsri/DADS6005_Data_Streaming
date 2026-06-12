@@ -1,0 +1,59 @@
+-- ============================================================
+-- KsqlDB Tables: Materialized Views สำหรับ Aggregation
+-- ============================================================
+
+-- #1: ค่าเฉลี่ย calories จำแนกตามเพศ
+CREATE TABLE IF NOT EXISTS avg_calories_by_gender AS
+  SELECT
+    gender,
+    COUNT(*) AS total_respondents,
+    ROUND(AVG(calories_day), 2) AS avg_calories_per_day,
+    ROUND(AVG(calories_chicken), 2) AS avg_calories_chicken,
+    ROUND(AVG(waffle_calories), 2) AS avg_waffle_calories,
+    ROUND(AVG(tortilla_calories), 2) AS avg_tortilla_calories
+  FROM food_flat_stream
+  GROUP BY gender
+  EMIT CHANGES;
+
+-- #2: ความสัมพันธ์ระหว่างความถี่ในการออกกำลังกายกับสุขภาพการกิน
+CREATE TABLE IF NOT EXISTS exercise_vs_diet AS
+  SELECT
+    exercise_frequency,
+    COUNT(*) AS count,
+    ROUND(AVG(diet_health_score), 2) AS avg_diet_score,
+    ROUND(AVG(calories_day), 2) AS avg_calories_day
+  FROM food_flat_stream
+  GROUP BY exercise_frequency
+  EMIT CHANGES;
+
+-- #3: Top comfort food reasons แบบ real-time
+CREATE TABLE IF NOT EXISTS comfort_food_reasons_stats AS
+  SELECT
+    UCASE(comfort_food_reason) AS reason_category,
+    COUNT(*) AS frequency,
+    ROUND(AVG(gpa), 2) AS avg_gpa
+  FROM food_flat_stream
+  GROUP BY UCASE(comfort_food_reason)
+  EMIT CHANGES;
+
+-- #4: ค่าเฉลี่ย nutrients ตามระดับรายได้
+CREATE TABLE IF NOT EXISTS nutrition_by_income AS
+  SELECT
+    income_level,
+    COUNT(*) AS total_respondents,
+    ROUND(AVG(veggies_per_day), 2) AS avg_veggies,
+    ROUND(AVG(fruit_intake), 2) AS avg_fruit_intake,
+    ROUND(AVG(calories_day), 2) AS avg_calories_day,
+    ROUND(AVG(vitamins), 2) AS avg_vitamin_usage
+  FROM food_flat_stream
+  GROUP BY income_level
+  EMIT CHANGES;
+
+-- #5: Top 5 favorite cuisines แบบ real-time
+CREATE TABLE IF NOT EXISTS top_cuisines AS
+  SELECT
+    UCASE(fav_cuisine) AS cuisine,
+    COUNT(*) AS popularity
+  FROM food_flat_stream
+  GROUP BY UCASE(fav_cuisine)
+  EMIT CHANGES;

@@ -1,0 +1,67 @@
+-- ============================================================
+-- KsqlDB Push / Pull Queries
+-- ============================================================
+
+-- ========================
+-- PUSH QUERIES (ต่อเนื่อง)
+-- ========================
+
+-- 1. ดู streaming data แบบ real-time (เฉพาะคนที่กินผัก ≥ 4 มื้อ/วัน)
+SELECT user_id, gender, veggies_per_day, calories_day, fav_cuisine
+FROM food_flat_stream
+WHERE veggies_per_day >= 4
+EMIT CHANGES;
+
+-- 2. ดูคนที่มี calorie สูงกว่า 500 และออกกำลังกายน้อย
+SELECT user_id, gender, calories_day, exercise_frequency, diet_health_score
+FROM food_flat_stream
+WHERE calories_day > 500 AND exercise_frequency <= 2
+EMIT CHANGES;
+
+-- 3. ดูข้อมูลคนที่ชอบอาหารไทย
+SELECT
+  user_id,
+  gender,
+  likes_thai_food,
+  fav_cuisine,
+  gpa
+FROM food_flat_stream
+WHERE likes_thai_food >= 4
+EMIT CHANGES;
+
+-- 4. Monitor การแทรกข้อมูลแบบ real-time
+SELECT
+  TIMESTAMPTOSTRING(ROWTIME, 'yyyy-MM-dd HH:mm:ss') AS event_time,
+  user_id,
+  gender,
+  comfort_food,
+  comfort_food_reason
+FROM food_flat_stream
+EMIT CHANGES;
+
+-- ========================
+-- PULL QUERIES ( snapshot )
+-- ========================
+
+-- 5. ค่าเฉลี่ย calories ตามเพศ
+SELECT * FROM avg_calories_by_gender;
+
+-- 6. Top 5 comfort food reasons
+SELECT reason_category, frequency, avg_gpa
+FROM comfort_food_reasons_stats
+ORDER BY frequency DESC
+LIMIT 5;
+
+-- 7. Top cuisines
+SELECT cuisine, popularity
+FROM top_cuisines
+ORDER BY popularity DESC
+LIMIT 5;
+
+-- 8. ความสัมพันธ์ exercise กับ diet
+SELECT * FROM exercise_vs_diet
+ORDER BY exercise_frequency;
+
+-- 9. nutrition ตามรายได้
+SELECT * FROM nutrition_by_income
+ORDER BY income_level;

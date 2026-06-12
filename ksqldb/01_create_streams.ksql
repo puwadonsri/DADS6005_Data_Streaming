@@ -1,0 +1,109 @@
+-- ============================================================
+-- KsqlDB Streams: สร้าง STREAM จาก Debezium CDC Topic
+-- ============================================================
+
+-- สร้าง STREAM สำหรับ data food_coded ที่ไหลจาก Debezium PostgreSQL
+CREATE STREAM IF NOT EXISTS food_coded_stream (
+  after STRUCT<
+    ids INTEGER,
+    gpa VARCHAR,
+    gender INTEGER,
+    breakfast INTEGER,
+    calories_chicken INTEGER,
+    calories_day INTEGER,
+    calories_scone INTEGER,
+    coffee INTEGER,
+    comfort_food VARCHAR,
+    comfort_food_reasons VARCHAR,
+    comfort_food_reasons_coded1 DOUBLE,
+    cook INTEGER,
+    comfort_food_reasons_coded INTEGER,
+    cuisine INTEGER,
+    diet_current VARCHAR,
+    diet_current_coded INTEGER,
+    drink INTEGER,
+    eating_changes VARCHAR,
+    eating_changes_coded INTEGER,
+    eating_changes_coded1 INTEGER,
+    eating_out INTEGER,
+    employment INTEGER,
+    ethnic_food INTEGER,
+    exercise INTEGER,
+    father_education INTEGER,
+    father_profession VARCHAR,
+    fav_cuisine VARCHAR,
+    fav_cuisine_coded INTEGER,
+    fav_food INTEGER,
+    food_childhood VARCHAR,
+    fries INTEGER,
+    fruit_day INTEGER,
+    grade_level INTEGER,
+    greek_food INTEGER,
+    healthy_feeling INTEGER,
+    healthy_meal VARCHAR,
+    ideal_diet VARCHAR,
+    ideal_diet_coded INTEGER,
+    income INTEGER,
+    indian_food INTEGER,
+    italian_food INTEGER,
+    life_rewarding INTEGER,
+    marital_status INTEGER,
+    meals_dinner_friend VARCHAR,
+    mother_education INTEGER,
+    mother_profession VARCHAR,
+    nutritional_check INTEGER,
+    on_off_campus INTEGER,
+    parents_cook INTEGER,
+    pay_meal_out INTEGER,
+    persian_food INTEGER,
+    self_perception_weight INTEGER,
+    soup INTEGER,
+    sports INTEGER,
+    thai_food INTEGER,
+    tortilla_calories INTEGER,
+    turkey_calories INTEGER,
+    type_sports VARCHAR,
+    veggies_day INTEGER,
+    vitamins INTEGER,
+    waffle_calories INTEGER,
+    weights VARCHAR
+  >
+) WITH (
+  KAFKA_TOPIC = 'source.public.db_food_coded2_stream',
+  VALUE_FORMAT = 'AVRO',
+  VALUE_SCHEMA_ID = 2
+);
+
+-- สร้าง STREAM แบบ flat (ไม่มี after wrapper) เพื่อ query ง่ายขึ้น
+CREATE STREAM IF NOT EXISTS food_flat_stream AS
+  SELECT
+    after->ids AS user_id,
+    after->gpa AS gpa,
+    CASE WHEN after->gender = 1 THEN 'Female' ELSE 'Male' END AS gender,
+    CASE WHEN after->breakfast = 1 THEN 'Yes' ELSE 'No' END AS eats_breakfast,
+    after->calories_chicken AS calories_chicken,
+    after->calories_day AS calories_day,
+    after->calories_scone AS calories_scone,
+    after->coffee AS coffee,
+    after->comfort_food AS comfort_food,
+    after->comfort_food_reasons AS comfort_food_reason,
+    after->cook AS cooking_frequency,
+    after->diet_current AS diet_description,
+    after->diet_current_coded AS diet_health_score,
+    after->eating_out AS eating_out_frequency,
+    after->exercise AS exercise_frequency,
+    after->fav_cuisine AS fav_cuisine,
+    after->fruit_day AS fruit_intake,
+    after->income AS income_level,
+    after->sports AS sports_played,
+    after->thai_food AS likes_thai_food,
+    after->veggies_day AS veggies_per_day,
+    after->vitamins AS takes_vitamins,
+    after->waffle_calories AS waffle_calories,
+    after->tortilla_calories AS tortilla_calories,
+    after->turkey_calories AS turkey_calories,
+    after->weights AS body_weight
+  FROM food_coded_stream
+  WHERE after IS NOT NULL
+  PARTITION BY after->ids
+  EMIT CHANGES;
