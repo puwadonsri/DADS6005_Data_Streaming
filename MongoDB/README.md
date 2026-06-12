@@ -19,6 +19,28 @@
 
 ---
 
+## Screenshots
+
+### BMI Calculator Tab
+
+![BMI Tab](assets/screenshots/screenshot_bmi_tab.png)
+
+ป้อนน้ำหนักและส่วนสูง → คำนวณ BMI → แสดงสถานะสุขภาพพร้อมคำแนะนำ และบันทึกข้อมูลลง MongoDB โดยอัตโนมัติ
+
+### View Data Tab
+
+![View Data Tab](assets/screenshots/screenshot_view_tab.png)
+
+ดูประวัติ BMI ทั้งหมดในรูปแบบตาราง พร้อมปุ่ม Update, Delete และ Show Graph
+
+### Weight Trend Graph
+
+![Weight Graph](assets/screenshots/screenshot_graph.png)
+
+กราฟ Scatter + Line แสดงแนวโน้มน้ำหนักตามช่วงเวลา ช่วยติดตามการเปลี่ยนแปลงของน้ำหนัก
+
+---
+
 ## Architecture
 
 ```
