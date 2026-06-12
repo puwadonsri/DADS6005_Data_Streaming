@@ -28,14 +28,18 @@ C = {
 
 
 def getfont(size, bold=False):
-    name = "Leelawadee UI"
-    try:
-        return ImageFont.truetype(f"{name}.ttf", size)
-    except:
+    paths = [
+        "C:/Windows/Fonts/LeelawUI.ttf",
+        "C:/Windows/Fonts/angsana.ttc",
+        "C:/Windows/Fonts/cordia.ttc",
+        "C:/Windows/Fonts/tahoma.ttf",
+    ]
+    for p in paths:
         try:
-            return ImageFont.truetype("Tahoma.ttf", size)
+            return ImageFont.truetype(p, size)
         except:
-            return ImageFont.load_default()
+            continue
+    return ImageFont.load_default()
 
 
 def draw_window_bg(draw, w, h, title="BMI Calculator with MongoDB — DADS6005"):

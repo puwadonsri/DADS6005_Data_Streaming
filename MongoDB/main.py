@@ -5,6 +5,7 @@ DADS6005 Data Streaming — Quiz 1 (MongoDB)
 
 import os
 import tkinter as tk
+import tkinter.font as tkfont
 from tkinter import ttk, messagebox
 from datetime import datetime
 import pandas as pd
@@ -16,21 +17,34 @@ db = MongoDBManager()
 
 # ── Thai Font Support ──────────────────────────────────────
 
-def get_font(family="Leelawadee UI", size=10, bold=False):
-    weight = "bold" if bold else "normal"
-    families_to_try = [family, "Tahoma", "Cordia New", "Angsana New"]
-    for f in families_to_try:
-        try:
-            return (f, size, weight)
-        except:
-            continue
-    return ("Tahoma", size, weight)
+import matplotlib.font_manager as fm
 
+_THAI_FONTS = ["Leelawadee UI", "Tahoma", "Cordia New", "Angsana New", "TH Sarabun New"]
+THAI_FONT = "Tahoma"
 
-FONT = ("Leelawadee UI", 10)
-FONT_BOLD = ("Leelawadee UI", 10, "bold")
-FONT_TITLE = ("Leelawadee UI", 14, "bold")
-FONT_SMALL = ("Leelawadee UI", 9)
+# Find first available Thai font
+for _f in _THAI_FONTS:
+    try:
+        tk.font.Font(family=_f).measure("ทดสอบ")
+        THAI_FONT = _f
+        break
+    except:
+        pass
+
+# Register with matplotlib
+for _f in _THAI_FONTS:
+    try:
+        fm.findfont(_f, fallback_to_default=False)
+        THAI_FONT = _f
+        plt.rcParams["font.family"] = _f
+        break
+    except:
+        continue
+
+FONT = (THAI_FONT, 10)
+FONT_BOLD = (THAI_FONT, 10, "bold")
+FONT_TITLE = (THAI_FONT, 14, "bold")
+FONT_SMALL = (THAI_FONT, 9)
 
 
 # ── Color Palette ───────────────────────────────────────────
@@ -142,10 +156,10 @@ def show_graph(data: list, parent):
     ax.plot(dates, weights, color="#95e1d3", linewidth=2, linestyle="--", marker="o",
             markersize=8, markerfacecolor="#2ecc71", markeredgecolor="#27ae60")
 
-    ax.set_title("แนวโน้มน้ำหนัก (Weight Trend)", fontfamily="Leelawadee UI",
+    ax.set_title("แนวโน้มน้ำหนัก (Weight Trend)", fontfamily=THAI_FONT,
                  fontsize=13, fontweight="bold", color="#2d3436", pad=12)
-    ax.set_xlabel("วันที่", fontfamily="Leelawadee UI", fontsize=10)
-    ax.set_ylabel("น้ำหนัก (kg.)", fontfamily="Leelawadee UI", fontsize=10)
+    ax.set_xlabel("วันที่", fontfamily=THAI_FONT, fontsize=10)
+    ax.set_ylabel("น้ำหนัก (kg.)", fontfamily=THAI_FONT, fontsize=10)
     ax.tick_params(axis="x", rotation=35, labelsize=8)
     ax.tick_params(axis="y", labelsize=9)
     ax.spines["top"].set_visible(False)
