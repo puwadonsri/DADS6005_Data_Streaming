@@ -1,102 +1,121 @@
 """
-Generate mockup screenshots for MongoDB project README
+Generate mockup screenshots — Modern GUI v2
 """
 from PIL import Image, ImageDraw, ImageFont
 import os
 
-W, H = 520, 480
-FONT = "Tahoma"
-COLORS = {
-    "bg": "#f0f0f0",
-    "frame_bg": "#d9d9d9",
-    "tab": "#e1e1e1",
-    "tab_active": "#ffffff",
-    "green": "#d4edda",
-    "green_text": "#155724",
-    "btn": "#0078d7",
-    "btn_text": "#ffffff",
-    "border": "#cccccc",
-}
-
 OUT = "assets/screenshots"
 os.makedirs(OUT, exist_ok=True)
 
+# ── Colors ──────────────────────────────────────────────────
+C = {
+    "bg": "#f5f6fa",
+    "card": "#ffffff",
+    "primary": "#2b579a",
+    "secondary": "#4ecdc4",
+    "text": "#2d3436",
+    "muted": "#636e72",
+    "border": "#dfe6e9",
+    "green_bg": "#e8f5e9",
+    "green_fg": "#2e7d32",
+    "red_bg": "#ffebee",
+    "red_fg": "#c62828",
+    "orange_bg": "#fff3e0",
+    "yellow_bg": "#fffde7",
+    "btn_bg": "#2b579a",
+    "row_even": "#f8f9fa",
+}
+
 
 def getfont(size, bold=False):
+    name = "Leelawadee UI"
     try:
-        return ImageFont.truetype(f"{FONT}{'bd' if bold else ''}.ttf", size)
+        return ImageFont.truetype(f"{name}.ttf", size)
     except:
         try:
-            return ImageFont.truetype("arial.ttf", size)
+            return ImageFont.truetype("Tahoma.ttf", size)
         except:
             return ImageFont.load_default()
 
 
-def mock_window(draw, title="BMI Calculator with MongoDB"):
-    draw.rectangle([0, 0, W, 30], fill="#2b579a")
-    draw.text((10, 6), title, fill="white", font=getfont(11))
+def draw_window_bg(draw, w, h, title="BMI Calculator with MongoDB — DADS6005"):
+    draw.rectangle([0, 0, w, 34], fill=C["primary"])
+    draw.text((14, 8), title, fill="white", font=getfont(11))
 
 
-def mock_tab(draw, tabs=["BMI", "View Data"], active=0):
-    x = 10
+def draw_tab(draw, tabs, active=0, x_start=8, y=38):
+    x = x_start
     for i, t in enumerate(tabs):
-        bg = COLORS["tab_active"] if i == active else COLORS["tab"]
-        w = 100 if t == "BMI" else 120
-        draw.rectangle([x, 35, x + w, 60], fill=bg, outline=COLORS["border"])
-        draw.text((x + 10, 42), t, fill="black", font=getfont(10))
+        w = 110 if "BMI" in t else 120
+        bg = C["card"] if i == active else "#e0e0e0"
+        fg = C["primary"] if i == active else C["text"]
+        draw.rectangle([x, y, x + w, y + 26], fill=bg, outline=C["border"])
+        draw.text((x + 14, y + 5), t, fill=fg, font=getfont(10))
         x += w + 2
 
 
-def mock_label_frame(draw, x, y, w, h, text):
-    draw.rectangle([x, y, x + w, y + h], fill="white", outline=COLORS["border"])
-    draw.text((x + 8, y + 4), text, fill="black", font=getfont(10, bold=True))
-    return (x, y + 20, x + w, y + h)
+def round_rect(draw, xy, r=8, **kw):
+    x1, y1, x2, y2 = xy
+    draw.rounded_rectangle([x1, y1, x2, y2], radius=r, **kw)
 
 
 # ============================================================
-# Screenshot 1: BMI Calculator Tab (Active Tab)
+# Screenshot 1 — BMI Calculator Tab (Active)
 # ============================================================
-img1 = Image.new("RGB", (W, H), COLORS["bg"])
+W1, H1 = 600, 560
+img1 = Image.new("RGB", (W1, H1), C["bg"])
 d1 = ImageDraw.Draw(img1)
-mock_window(d1)
-mock_tab(d1, active=0)
 
-# BMI form frame
-fx, fy, fw, fh = 30, 75, 460, 120
-mock_label_frame(d1, fx, fy, fw, fh, "คำนวณค่าดัชนีมวลกาย (BMI)")
+draw_window_bg(d1, W1, H1)
+draw_tab(d1, ["💪 BMI", "📋 ดูข้อมูล"], active=0)
 
-d1.text((50, fy + 30), "น้ำหนักตัว (kg.) :", fill="black", font=getfont(10))
-d1.rectangle([170, fy + 28, 330, fy + 48], fill="white", outline="#aaa")
-d1.text((175, fy + 30), "70", fill="#666", font=getfont(10))
+# Header text
+d1.text((20, 74), "🧮 เครื่องคำนวณดัชนีมวลกาย (BMI)", fill=C["text"], font=getfont(14, bold=True))
+d1.text((20, 94), "คำนวณ BMI และรับคำแนะนำสุขภาพ พร้อมบันทึกข้อมูลลง MongoDB",
+        fill=C["muted"], font=getfont(9))
 
-d1.text((50, fy + 60), "ส่วนสูง (cm.) :", fill="black", font=getfont(10))
-d1.rectangle([170, fy + 58, 330, fy + 78], fill="white", outline="#aaa")
-d1.text((175, fy + 60), "175", fill="#666", font=getfont(10))
+# Input card
+round_rect(d1, [20, 112, 580, 200], fill=C["card"], outline=C["border"])
+d1.text((32, 120), "ข้อมูลร่างกาย", fill=C["text"], font=getfont(10, bold=True))
+
+# Weight field
+d1.text((45, 148), "น้ำหนักตัว (kg.)", fill=C["text"], font=getfont(10))
+round_rect(d1, [45, 168, 210, 192], fill="white", outline="#cccccc")
+d1.text((98, 172), "70", fill="#b2bec3", font=getfont(11))
+
+# Height field
+d1.text((310, 148), "ส่วนสูง (cm.)", fill=C["text"], font=getfont(10))
+round_rect(d1, [310, 168, 470, 192], fill="white", outline="#cccccc")
+d1.text((365, 172), "175", fill="#b2bec3", font=getfont(11))
 
 # Buttons
-d1.rectangle([50, fy + 90, 150, fy + 112], fill=COLORS["btn"])
-d1.text((58, fy + 92), "Calculate & Save", fill=COLORS["btn_text"], font=getfont(10))
-d1.rectangle([160, fy + 90, 220, fy + 112], fill=COLORS["frame_bg"], outline="#aaa")
-d1.text((175, fy + 93), "Clear", fill="black", font=getfont(10))
+round_rect(d1, [45, 204, 175, 230], fill=C["primary"])
+d1.text((58, 209), "💾 คำนวณ & บันทึก", fill="white", font=getfont(10))
+round_rect(d1, [185, 204, 263, 230], fill=C["card"], outline=C["border"])
+d1.text((201, 209), "🗑️ ล้าง", fill=C["text"], font=getfont(10))
 
-# BMI result
-d1.rectangle([30, 210, 490, 260], fill=COLORS["green"], outline="#c3e6cb")
+# Progress bar label
+d1.text((20, 246), "BMI Index", fill=C["muted"], font=getfont(9))
+
+# Progress bar
+d1.rectangle([20, 258, 580, 274], fill="#e0e0e0", outline=None)
+d1.rectangle([20, 258, 220, 274], fill=C["secondary"])
+
+# Result card (green = healthy)
+round_rect(d1, [20, 286, 580, 520], fill=C["green_bg"], outline="#c8e6c9")
 d1.text(
-    (40, 218),
-    "BMI : 22.86\nปกติ (สุขภาพดี)\nภาวะเสี่ยงต่อโรค : เท่าคนปกติ",
-    fill=COLORS["green_text"],
-    font=getfont(10),
+    (30, 300),
+    "BMI = 22.86    |    ปกติ (สุขภาพดี)    |    ความเสี่ยง: เท่าคนปกติ",
+    fill=C["green_fg"],
+    font=getfont(11, bold=True),
 )
-
-# Advice
-d1.rectangle([30, 265, 490, 430], fill="white", outline=COLORS["border"])
 d1.text(
-    (40, 270),
-    "น้ำหนักปกติ\nค่าดัชนีมวลกายของคุณอยู่ระหว่าง 18.50 - 22.90\n\n"
+    (30, 330),
+    "น้ำหนักปกติ\n\n"
     "ข้อแนะนำ\n"
     "1. กินอาหารให้หลากหลายครบ 5 หมู่ในสัดส่วนที่เหมาะสม\n"
-    "2. ออกกำลังกายอย่างสม่ำเสมออย่างน้อย 30 นาที/วัน",
-    fill="black",
+    "2. ออกกำลังกายอย่างสม่ำเสมอ 30 นาที/วัน",
+    fill=C["green_fg"],
     font=getfont(10),
 )
 
@@ -105,92 +124,102 @@ print(f"[OK] {OUT}/screenshot_bmi_tab.png")
 
 
 # ============================================================
-# Screenshot 2: View Data Tab
+# Screenshot 2 — View Data Tab
 # ============================================================
-img2 = Image.new("RGB", (W, H), COLORS["bg"])
+W2, H2 = 620, 480
+img2 = Image.new("RGB", (W2, H2), C["bg"])
 d2 = ImageDraw.Draw(img2)
-mock_window(d2)
-mock_tab(d2, active=1)
 
-d2.text((20, 70), "BMI Data", fill="black", font=getfont(14, bold=True))
+draw_window_bg(d2, W2, H2)
+draw_tab(d2, ["💪 BMI", "📋 ดูข้อมูล"], active=1, x_start=120)
 
-# Treeview header
-cols_x = [20, 130, 240, 320, 20]
-cols_w = [110, 110, 80, 100, 200]
-headers = ["Computer Name", "Weight", "Height", "BMI", "Action"]
-d2.rectangle([20, 95, 500, 115], fill="#4ecdc4")
-x = 25
-for h in headers[:4]:
-    d2.text((x, 97), h, fill="white", font=getfont(10, bold=True))
-    x += cols_w[headers.index(h)]
+# Header
+d2.text((15, 74), "📋 ประวัติ BMI ทั้งหมด", fill=C["text"], font=getfont(14, bold=True))
 
-# Sample rows
-sample_data = [
-    ("DESKTOP-ABC", "70", "175", "22.86"),
-    ("DESKTOP-ABC", "68", "175", "22.20"),
-    ("DESKTOP-XYZ", "85", "180", "26.23"),
-    ("DESKTOP-ABC", "72", "175", "23.51"),
-    ("LAPTOP-001", "55", "160", "21.48"),
+# Table header
+col_x = [20, 55, 210, 280, 350, 420]
+col_w = [35, 155, 70, 70, 70, 100]
+headers = ["#", "Computer", "น้ำหนัก", "ส่วนสูง", "BMI", "วันที่"]
+
+d2.rectangle([15, 98, 605, 120], fill=C["secondary"])
+for i, h in enumerate(headers):
+    d2.text((col_x[i] + 4, 101), h, fill="white", font=getfont(10, bold=True))
+
+# Sample data
+rows = [
+    ("1", "DESKTOP-ABC", "70", "175", "22.86", "2026-06-12"),
+    ("2", "DESKTOP-ABC", "68", "175", "22.20", "2026-06-10"),
+    ("3", "DESKTOP-XYZ", "85", "180", "26.23", "2026-06-08"),
+    ("4", "DESKTOP-ABC", "72", "175", "23.51", "2026-06-05"),
+    ("5", "LAPTOP-001", "55", "160", "21.48", "2026-06-03"),
+    ("6", "DESKTOP-XYZ", "82", "180", "25.31", "2026-06-01"),
 ]
-y = 116
-for i, (name, w, h, b) in enumerate(sample_data):
-    bg_s = "white" if i % 2 == 0 else "#f8f9fa"
-    d2.rectangle([20, y, 500, y + 22], fill=bg_s)
-    d2.text((25, y + 2), name, fill="black", font=getfont(9))
-    d2.text((135, y + 2), w, fill="black", font=getfont(9))
-    d2.text((245, y + 2), h, fill="black", font=getfont(9))
-    d2.text((325, y + 2), b, fill="black", font=getfont(9))
-    y += 23
+
+y = 121
+for i, row in enumerate(rows):
+    bg_s = C["row_even"] if i % 2 == 1 else "white"
+    d2.rectangle([15, y, 605, y + 26], fill=bg_s)
+    for j, val in enumerate(row):
+        if j == 4:
+            bmi_val = float(val)
+            bmi_color = C["green_fg"] if bmi_val < 24 else (C["red_fg"] if bmi_val > 30 else "#e65100")
+            d2.text((col_x[j] + 4, y + 4), val, fill=bmi_color, font=getfont(10, bold=True))
+        else:
+            d2.text((col_x[j] + 4, y + 4), val, fill=C["text"], font=getfont(10))
+    y += 26
 
 # Buttons
-bx = [30, 110, 190, 270]
-bt = ["Update", "Delete", "Show Graph", "Exit"]
+bx_pos = [20, 105, 190, 275]
+btn_labels = ["✏️ แก้ไข", "🗑️ ลบ", "📈 กราฟ", "❌ ออก"]
 for i in range(4):
-    d2.rectangle([bx[i], 260, bx[i] + 70, 280], fill=COLORS["btn"])
-    d2.text((bx[i] + 5, 263), bt[i], fill=COLORS["btn_text"], font=getfont(9))
+    round_rect(d2, [bx_pos[i], y + 10, bx_pos[i] + 75, y + 34], fill=C["primary"])
+    d2.text((bx_pos[i] + 6, y + 15), btn_labels[i], fill="white", font=getfont(10))
 
 img2.save(f"{OUT}/screenshot_view_tab.png")
 print(f"[OK] {OUT}/screenshot_view_tab.png")
 
 
 # ============================================================
-# Screenshot 3: Weight Trend Graph
+# Screenshot 3 — Weight Trend Graph
 # ============================================================
-img3 = Image.new("RGB", (550, 480), "white")
+W3, H3 = 580, 460
+img3 = Image.new("RGB", (W3, H3), "#f8f9fa")
 d3 = ImageDraw.Draw(img3)
-d3.rectangle([0, 0, 550, 30], fill="#2b579a")
-d3.text((10, 6), "Weight Trend Graph", fill="white", font=getfont(11))
 
-# Draw axes
-d3.line([60, 420, 520, 420], fill="black", width=2)
-d3.line([60, 40, 60, 420], fill="black", width=2)
+d3.rectangle([0, 0, W3, 34], fill=C["primary"])
+d3.text((14, 8), "Weight Trend Graph", fill="white", font=getfont(11))
 
-# X-axis labels (dates)
-dates = ["May", "Jun", "Jul", "Aug", "Sep"]
+d3.text((20, 44), "แนวโน้มน้ำหนัก", fill=C["text"], font=getfont(14, bold=True))
+
+# Graph area
+gx, gy, gw, gh = 70, 80, 460, 320
+d3.rectangle([gx, gy, gx + gw, gy + gh], fill="white", outline=C["border"])
+
+# Axes
+d3.line([gx + 40, gy + gh - 30, gx + gw - 10, gy + gh - 30], fill=C["text"], width=2)  # x
+d3.line([gx + 40, gy + 20, gx + 40, gy + gh - 30], fill=C["text"], width=2)  # y
+
+# X labels
+dates = ["May 01", "May 15", "Jun 01", "Jun 15", "Jul 01"]
 for i, dd in enumerate(dates):
-    x = 100 + i * 90
-    d3.text((x - 10, 425), dd, fill="black", font=getfont(9))
-    d3.line([x, 418, x, 422], fill="black")
+    x = gx + 60 + i * 80
+    d3.text((x - 16, gy + gh - 24), dd, fill=C["muted"], font=getfont(7))
 
-# Y-axis labels
-for i, yy in enumerate(range(50, 90, 5)):
-    y = 420 - (yy - 50) * 3
-    d3.text((15, y - 6), str(yy), fill="black", font=getfont(9))
-    d3.line([58, y, 62, y], fill="black")
+# Y labels
+for i, yy in enumerate(range(50, 95, 5)):
+    y = gy + gh - 30 - (yy - 50) * 6
+    d3.text((gx + 8, y - 6), str(yy), fill=C["muted"], font=getfont(8))
+    d3.line([gx + 38, y, gx + 42, y], fill=C["text"])
 
-# Data points and line
-points = [(100, 380), (190, 360), (280, 340), (370, 310), (460, 330)]
-for i, (px, py) in enumerate(points):
-    d3.ellipse([px - 4, py - 4, px + 4, py + 4], fill="#2ecc71", outline="black")
+# Data
+pts = [(gx + 60, gy + gh - 100), (gx + 140, gy + gh - 90), (gx + 220, gy + gh - 115),
+       (gx + 300, gy + gh - 130), (gx + 380, gy + gh - 110)]
+for i, (px, py) in enumerate(pts):
+    d3.ellipse([px - 5, py - 5, px + 5, py + 5], fill="#2ecc71", outline="#27ae60")
     if i > 0:
-        d3.line([points[i - 1][0], points[i - 1][1], px, py], fill="gray", width=1)
-
-# Title
-d3.text((180, 50), "Weight Over Time", fill="black", font=getfont(12, bold=True))
-d3.text((180, 68), "Scatter plot showing weight trend by date", fill="#666", font=getfont(9))
+        d3.line([pts[i - 1][0], pts[i - 1][1], px, py], fill="#95e1d3", width=2)
 
 img3.save(f"{OUT}/screenshot_graph.png")
 print(f"[OK] {OUT}/screenshot_graph.png")
 
-
-print("\n=== All screenshots generated ===")
+print("\n=== All screenshots regenerated ===")
