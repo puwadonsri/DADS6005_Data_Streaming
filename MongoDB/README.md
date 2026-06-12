@@ -71,7 +71,7 @@ docker run -d --name mongodb -p 27017:27017 mongo:7
 ### 2. Install dependencies
 
 ```bash
-pip install pymongo pandas matplotlib
+pip install flet pymongo pandas matplotlib
 ```
 
 ### 3. Run the app
@@ -79,6 +79,11 @@ pip install pymongo pandas matplotlib
 ```bash
 python main.py
 ```
+
+> **Flet** จะเปิดหน้าต่าง GUI แบบ native (Flutter engine) หรือจะเปิดเป็น Web App ก็ได้:
+> ```bash
+> python -c "import flet; flet.app(target=main, view=ft.WEB_BROWSER)"
+> ```
 
 ---
 
@@ -117,6 +122,15 @@ db.delete_by_id("...")         # Delete record
 
 ---
 
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| GUI Framework | **Flet** (Flutter engine — Material 3 Design) |
+| Database | **MongoDB** (via PyMongo) |
+| Chart | **Matplotlib** (embedded in Flet) |
+| Language | **Python 3.8+** |
+
 ## Improvements from Original
 
 | Original | Improved |
@@ -129,3 +143,6 @@ db.delete_by_id("...")         # Delete record
 | Hardcoded list indices `tmp[5]`, `tmp[2]` in graph | Uses dict keys `_date`, `_weight` |
 | No error handling | Try/except + `messagebox` warnings |
 | Spaghetti ~276 lines | Clean modular ~240 lines |
+| **GUI: Tkinter (Windows 95 style)** | **GUI: Flet (Material 3 — Flutter engine)** |
+| **Emoji icons ไม่แสดง / Thai font ติดปัญหา** | **Material Icons + Flutter รองรับภาษาไทย native** |
+| **Matplotlib ติดปัญหา font family** | **Flet แสดงผลกราฟผ่าน MatplotlibChart** |
